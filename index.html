@@ -30,7 +30,7 @@
                 width: 4.5vh;
                 height: 4.5vh;
                 z-index: -1;
-                box-shadow: 0 0 1vh rgba(255, 123, 161, 0.4);
+                box-shadow: 0 0 1vh rgba(255, 123, 161, 1);
             }
         </style>
     </head>
@@ -178,24 +178,30 @@
                 }
 
                 var markx1, markx2;
-                var len = 0;
+                var marky1, marky2;
+                var lenx = 0, leny = 0;
                 function tail () {
                     if (make_new == false) {
                         markx1 = now_obj[1][0];
-                        markx2 += (markx1 - markx2) * 0.5;
+                        markx2 += (markx1 - markx2) * 0.15;
+                        marky1 = now_obj[1][1];
+                        marky2 += (marky1 - marky2) * 0.3;
+                        if (Math.abs(markx2 - markx1) <= 0.05) markx2 = markx1
+                        if (Math.abs(marky2 - marky1) <= 0.05) marky2 = marky1
                     }
                 }
-                setInterval(tail, 20);
+                setInterval(tail, 10);
 
                 setInterval(function() {
-                    len = markx2 - markx1;
+                    lenx = markx2 - markx1;
+                    leny = marky2 - marky1;
                     for (var i = 0; i < 4; ++i)
-                    now_obj_draw[i][1].style.boxShadow = len + "vh 0 1vh rgba(255, 0, 72, 0.4)";
+                        now_obj_draw[i][1].style.boxShadow = lenx + "vh " + leny + "vh 1vh rgba(255, 0, 72, 1)";
                 }, 5);
 
                 document.addEventListener("keydown", function movement(e) {
 
-                    if (e.keyCode >= 37 && e.keyCode <= 40) {
+                    if (e.keyCode >= 37 && e.keyCode <= 39) {
                         var obj_moved = [];
                         obj_moved[0] = now_obj[0];
                         obj_moved[1] = now_obj[1].slice();
@@ -205,7 +211,7 @@
                         if (e.keyCode == 38) { //上箭头
                                     //[O,I1,I2,L1,L2,L3,L4,J1,J2,J3, J4, S1, S2, Z1, Z2, T1, T2, T3, T4
                                     //[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
-                            var idx = [0, 2, 1, 4, 5, 6, 3, 8, 9, 10, 7, 12, 11, 14, 13, 16, 17, 18, 15]
+                            var idx = [0, 2, 1, 6, 3, 4, 5, 10, 7, 8, 9, 12, 11, 14, 13, 18, 15, 16, 17]
                             obj_moved[2] = idx[obj_moved[2]];
                             obj_moved[0] = allblocks[obj_moved[2]];
                         }
@@ -213,36 +219,39 @@
                             obj_moved[1][0]-= 4.5;
                         }
                         if (e.keyCode == 39) { //右箭头
-                            obj_moved[1][0]+= 4.5;
+                            obj_moved[1][0]+= 4.5
                         }
                         if (e.keyCode == 40) { //下箭头
-                            obj_moved[1][1]++;
                         }
                     
 
                         //移动后判定
-                        for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) 
-                           if ((obj_moved[1][0] + i * sz < 0 || obj_moved[1][0] + i * sz > 9 * sz || obj_moved[1][1] > 20 * sz)) return; //边界判定
-                            //else if (map[Math.round(obj_moved[1][0] / sz)][Math.round(obj_moved[1][1] / sz)] == 1) return;   //碰撞
+                        for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
+                            var x = obj_moved[1][0] + i * sz + sz * 0.5;
+                            var y = obj_moved[1][1] + j * sz + sz * 0.5;
+                            if (x < 0 || x > 10 * sz || y > 20 * sz) return; //边界判定
+                            else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) return;   //碰撞
+
+                            if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1 || map[Math.floor(x / sz)][Math.ceil(y / sz)] == 1)
+                                now_obj[1][1] = obj_moved[1][1] = Math.round(obj_moved[1][1] / sz) * sz;
+                        }
                     
 
                         //判定成功
                         //now_obj = obj_moved;
                         if (dist == 0) {
-                            dist = 4.5; dir = e.keyCode - 37;
-                            if (e.keyCode == 37) a_move = setInterval(A_move, 1);
-                            if (e.keyCode == 39) a_move = setInterval(A_move, 1);
-                            if (e.keyCode == 38) {
-                                dist = 0;
-                                now_obj = obj_moved;
-                                var cnt = 0;
-                                for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) {
-                                    var x = now_obj[1][0] + i * sz;
-                                    var y = now_obj[1][1] + j * sz;
-                                    now_obj_draw[cnt][0].style.left = now_obj_draw[cnt][1].style.left = x + 'vh';
-                                    now_obj_draw[cnt][0].style.top = now_obj_draw[cnt][1].style.top = y + 'vh';
-                                    cnt++;
-                                }
+                            if (e.keyCode == 37) { dist = 4.5; dir = e.keyCode - 37; a_move = setInterval(A_move, 1); }
+                            if (e.keyCode == 39) { dist = 4.5; dir = e.keyCode - 37; a_move = setInterval(A_move, 1); }
+                        }
+                        if (e.keyCode == 38) {
+                            now_obj = obj_moved;
+                            var cnt = 0;
+                            for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) {
+                                var x = now_obj[1][0] + i * sz;
+                                var y = now_obj[1][1] + j * sz;
+                                now_obj_draw[cnt][0].style.left = now_obj_draw[cnt][1].style.left = x + 'vh';
+                                now_obj_draw[cnt][0].style.top = now_obj_draw[cnt][1].style.top = y + 'vh';
+                                cnt++;
                             }
                         }
                     }
@@ -251,6 +260,7 @@
                 function spawn() {
                     if (make_new == true) {
                         markx1 = markx2 = 2 * sz;
+                        marky1 = marky2 = 0;
                         now_obj = [[], [2 * sz, 0], Math.floor(Math.random() * 19), Math.floor(Math.random() * 4)];
                         now_obj[0] = allblocks[now_obj[2]];
                         var game = document.querySelector(".game");
@@ -274,34 +284,65 @@
                         }
                         make_new = false;
                     }
-                    
                 }
+
+                function check () {
+                    for (var j = 19; j >= 0; --j) {
+                        var flag = true;
+                        for (var i = 0; i < 10; ++i)
+                            if (map[i][j] == 0) {
+                                flag = false;
+                                break;
+                            }
+                        if (flag) {
+                            for (var k = j; k < 20; ++k)
+                                for (var i = 0; i < 10; ++i)
+                                    map[i][k] = k == 20 ? 0 : map[i][k + 1];
+                            var blks = document.getElementsByClassName("block");
+                        }
+                    }
+                }
+                
+                
+
+
                 function drop() {
-                    if (make_new == false) {
+                    if (make_new == false && dist == 0) {
                         var obj_moved = [];
                         obj_moved[0] = now_obj[0];
                         obj_moved[1] = now_obj[1].slice();
                         obj_moved[2] = now_obj[2];
-                        obj_moved[1][1]++;
+                        obj_moved[1][1]+= 0.2;
 
                         var flag = false;
-                        for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
-                            if (obj_moved[1][1] + j >= 20) flag = true; //边界判定
-                            if (obj_moved[1][1] + j >= 0 && map[obj_moved[1][0] + i][obj_moved[1][1] + j] == 1) flag = true;   //碰撞
+                        for (var i = 0; i < 4; ++i) for (var j = 3; j >= 0; --j) if (obj_moved[0][i][j] == 1) {
+                            var x = obj_moved[1][0] + i * sz;
+                            var y = obj_moved[1][1] + j * sz;
+                            if (y > 19 * sz) { flag = true; break } //边界判定
+                            else if (map[Math.round(x / sz)][Math.ceil(y / sz)] == 1) { flag = true; break } //碰撞
                         }
                         
                         if (flag == false)
                             now_obj = obj_moved;
+
                         if (flag == true) {
-                            for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j])
-                            map[now_obj[1][0] + i][now_obj[1][1] + j] = 1;
-                            make_new = true;
+                            for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) {
+                                var x = Math.round(now_obj[1][0] / sz) * sz + i * sz;
+                                var y = Math.round(now_obj[1][1] / sz) * sz + j * sz;
+                                map[x / sz][y / sz] = 1;
+                            }
+                            now_obj[1][1] = obj_moved[1][1] = Math.round(obj_moved[1][1] / sz) * sz;
+                            now_obj[1][0] = obj_moved[1][0] = Math.round(obj_moved[1][0] / sz) * sz;
+
+                            setInterval(check(), 1);
                         }
+
                         var cnt = 0;
                         for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) {
-                            now_obj_draw[cnt].id = "blk" + (now_obj[1][0] + i) + "_" + (now_obj[1][1] + j);
-                            now_obj_draw[cnt].style.gridColumn = now_obj[1][0] + i + 1;
-                            now_obj_draw[cnt].style.gridRow = now_obj[1][1] + j + 1;
+                            var x = now_obj[1][0] + i * sz;
+                            var y = now_obj[1][1] + j * sz;
+                            now_obj_draw[cnt][0].style.left = now_obj_draw[cnt][1].style.left = x + 'vh';
+                            now_obj_draw[cnt][0].style.top = now_obj_draw[cnt][1].style.top = y + 'vh';
                             cnt++;
                         }
                     }
@@ -309,7 +350,7 @@
 
 
                 setInterval(spawn, 1);
-                //setInterval(drop, 300);
+                setInterval(drop, 5);
 
             </script>
         </id> 
