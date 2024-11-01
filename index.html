@@ -4,6 +4,18 @@
         <meta charset="UTF-8">
         <title>块！</title>
         <style>
+            body {
+                background-color: black;
+            }
+            h1 {
+                z-index: -1;
+                font-size: 10vh;
+                left: 50%;
+                transform: translate(-50%);
+                color: rgba(227, 227, 227, 0.8);
+                text-shadow: 0 0.1vh 1vh rgba(206, 234, 255, 0.4);
+                position: absolute;
+            }
             .game {
                 width: 45vh;
                 height: 90vh;
@@ -11,9 +23,11 @@
                 left : 50%;
                 Top : 2%;
                 transform: translate(-50%);
-                box-shadow: 0 0 10px rgba(37, 110, 255, 0.8);
+                background-color: rgb(0, 0, 0);
+                box-shadow: 0 0 5vh rgba(7, 62, 94, 0.8);
+                /* border: 5px solid rgb(59, 59, 59); */
                 overflow: hidden;
-                background-image: url("1bkg.png");
+                
                 background-repeat: repeat;
                 background-size: 10% 5%;
             
@@ -30,13 +44,14 @@
                 width: 4.5vh;
                 height: 4.5vh;
                 z-index: -1;
-                box-shadow: 0 0 1vh rgba(255, 123, 161, 0.4);
+                box-shadow: 0 0 1vh rgba(0, 0, 0, 0.1);
             }
         </style>
     </head>
     <body>
         <div class = "game">
             <script>
+                var score = 0;
                 var allblocks = [
                     [   [0, 0, 0, 0],
                         [0, 1, 1, 0],
@@ -143,7 +158,7 @@
                 }
                 score = 0;
                 make_new = true;
-
+                var shadow_color = ["227, 89, 134", "65, 203, 0", "74, 170, 255", "240, 108, 0"];
                 var now_obj; // 5x5grip, [x, y](左上角), 类型, 颜色
                 var now_obj_draw; // 绘制对象
                 var cnt = 0;
@@ -190,18 +205,36 @@
                         lenx = markx2 - markx1;
                         leny = marky2 - marky1;
                         for (var i = 0; i < 4; ++i)
-                            now_obj_draw[i][1].style.boxShadow = lenx + "vh " + leny + "vh 1vh rgba(255, 123, 161, 0.4)";
+                            now_obj_draw[i][1].style.boxShadow = lenx + "vh " + leny + "vh 1vh rgba(" + shadow_color[now_obj[3]] + ", 0.5)";
                     }
                 }, 5);
 
                 document.addEventListener("keydown", function movement(e) {
 
+                    if (e.keyCode == 40 && make_new == false && dist == 0) { //下箭头
+                        now_obj[1][0] = Math.floor(now_obj[1][0] / sz) * sz;
+                            while (1) {
+                                var obj_moved = [];
+                                obj_moved[0] = now_obj[0];
+                                obj_moved[1] = now_obj[1].slice();
+                                obj_moved[2] = now_obj[2];
+                                obj_moved[1][1] += 4.5;
+                                obj_moved[3] = now_obj[3];
+                                for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
+                                    var x = obj_moved[1][0] + i * sz + sz * 0.5 + dir * dist;
+                                    var y = obj_moved[1][1] + j * sz + sz;
+                                    if (x < 0 || x > 10 * sz || y >= 20 * sz) return; //边界判定
+                                    else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) return;   //碰撞
+                                }
+                                now_obj = obj_moved;
+                            }
+                    }
                     if (e.keyCode >= 37 && e.keyCode <= 39 && (dist == 0 || e.keyCode == 38) && make_new == false) {
                         var obj_moved = [];
                         obj_moved[0] = now_obj[0];
                         obj_moved[1] = now_obj[1].slice();
                         obj_moved[2] = now_obj[2];
-
+                        obj_moved[3] = now_obj[3]
                             
                         if (e.keyCode == 38) { //上箭头
                                     //[O,I1,I2,L1,L2,L3,L4,J1,J2,J3, J4, S1, S2, Z1, Z2, T1, T2, T3, T4
@@ -216,9 +249,6 @@
                         if (e.keyCode == 39) { //右箭头
                             obj_moved[1][0]+= 4.5
                         }
-                        if (e.keyCode == 40) { //下箭头
-                        }
-                    
 
                         //移动后判定
                         for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
@@ -251,7 +281,94 @@
                         }
                     }
                 });
+                
+                var startX, startY;
+                document.addEventListener('touchstart', function(e) {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                });
+                document.addEventListener('touchend', function(e) {
+                    var distanceX = e.changedTouches[0].clientX - startX;
+                    var distanceY = e.changedTouches[0].clientY - startY;
+            
+                    if (Math.abs(distanceX) > Math.abs(distanceY)) {
+                        if (dist == 0 && make_new == false) {
+                            var obj_moved = [];
+                            obj_moved[0] = now_obj[0];
+                            obj_moved[1] = now_obj[1].slice();
+                            obj_moved[2] = now_obj[2];
+                            obj_moved[3] = now_obj[3]
+                            if (distanceX < 0) obj_moved[1][0]-= 4.5;
+                            else obj_moved[1][0]+= 4.5
+                            for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
+                                var x = obj_moved[1][0] + i * sz + sz * 0.5 + dir * dist;
+                                var y = obj_moved[1][1] + j * sz + sz * 0.5;
+                                if (x < 0 || x > 10 * sz || y > 20 * sz) return; //边界判定
+                                else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) return;   //碰撞
 
+                                if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1 || map[Math.floor(x / sz)][Math.ceil(y / sz)] == 1)
+                                    now_obj[1][1] = obj_moved[1][1] = Math.round(obj_moved[1][1] / sz) * sz;
+                            }
+                            //判定成功
+                            //now_obj = obj_moved;
+                            if (dist == 0) {
+                                if (distanceX < 0) { dist = 4.5; dir = -1; a_move = setInterval(A_move, 1); }
+                                else { dist = 4.5; dir = 1; a_move = setInterval(A_move, 1); }
+                            }
+                            return;
+                        }
+                    } else {
+                        if (distanceY > 0 && make_new == false && dist == 0) { //下滑动
+                            now_obj[1][0] = Math.floor(now_obj[1][0] / sz) * sz;
+                                while (1) {
+                                    var obj_moved = [];
+                                    obj_moved[0] = now_obj[0];
+                                    obj_moved[1] = now_obj[1].slice();
+                                    obj_moved[2] = now_obj[2];
+                                    obj_moved[1][1] += 4.5;
+                                    obj_moved[3] = now_obj[3];
+                                    for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
+                                        var x = obj_moved[1][0] + i * sz + sz * 0.5 + dir * dist;
+                                        var y = obj_moved[1][1] + j * sz + sz;
+                                        if (x < 0 || x > 10 * sz || y >= 20 * sz) return; //边界判定
+                                        else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) return;   //碰撞
+                                    }
+                                    now_obj = obj_moved;
+                                }                     
+                        }
+                        if (distanceY < 0 && make_new == false) {
+                            var obj_moved = [];
+                            obj_moved[0] = now_obj[0];
+                            obj_moved[1] = now_obj[1].slice();
+                            obj_moved[2] = now_obj[2];
+                            obj_moved[3] = now_obj[3]
+                            var idx = [0, 2, 1, 6, 3, 4, 5, 10, 7, 8, 9, 12, 11, 14, 13, 18, 15, 16, 17]
+                            obj_moved[2] = idx[obj_moved[2]];
+                            obj_moved[0] = allblocks[obj_moved[2]];
+                            for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
+                                var x = obj_moved[1][0] + i * sz + sz * 0.5 + dir * dist;
+                                var y = obj_moved[1][1] + j * sz + sz * 0.5;
+                                if (x < 0 || x > 10 * sz || y > 20 * sz) return; //边界判定
+                                else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) return;   //碰撞
+
+                                if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1 || map[Math.floor(x / sz)][Math.ceil(y / sz)] == 1)
+                                    now_obj[1][1] = obj_moved[1][1] = Math.round(obj_moved[1][1] / sz) * sz;
+                                now_obj = obj_moved;
+                                var cnt = 0;
+                                for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) {
+                                    var x = now_obj[1][0] + i * sz;
+                                    var y = now_obj[1][1] + j * sz;
+                                    now_obj_draw[cnt][0].style.left = now_obj_draw[cnt][1].style.left = x + 'vh';
+                                    now_obj_draw[cnt][0].style.top = now_obj_draw[cnt][1].style.top = y + 'vh';
+                                    cnt++;
+                                }
+                            }
+                        }
+                    }                                                                                                                                                                          
+            });
+                
+                
+                function sleep(time) { return new Promise((resolve) => setTimeout(resolve, time)); }
                 function spawn() {
                     if (make_new == true) {
                         markx1 = markx2 = 2 * sz;
@@ -261,6 +378,7 @@
                         var list = [[0], [1, 2], [3, 4, 5, 6], [7, 8, 9, 10], [11, 12], [13, 14], [15, 16, 17, 18]];
                         var m = Math.floor(Math.random() * 7);
                         var n = Math.floor(Math.random() * list[m].length);
+                        var col = ["rblk", "gblk", "bblk", "yblk"];
                         now_obj = [[], [2 * sz, -4 * sz], list[m][n], Math.floor(Math.random() * 4)];
                         now_obj[0] = allblocks[now_obj[2]];
                         var game = document.querySelector(".game");
@@ -271,6 +389,8 @@
                                 var block = document.createElement("div");
                                 var shadow = document.createElement("div");
                                 block.className = "block";
+                                block.style.backgroundImage = 'url("' + col[now_obj[3]] + ".png" + '")';
+                                block.style.boxShadow = "0 0 1vh rgba(" + shadow_color[now_obj[3]] + ", 0.5)";
                                 shadow.className = "shadow";
                                 var x = now_obj[1][0] + i * sz;
                                 var y = now_obj[1][1] + j * sz;
@@ -285,44 +405,72 @@
                         make_new = false;
                     }
                 }
-
+               
                 function check () {
-
-                    for (var j = 0; j < 20; ++j) {
+                    var falling_objects = [];
+                    var removing_objects = [];
+                    for (var i = 0; i < 10; ++i)
+                        if (map[i][0] == 1) {
+                            var hd = document.getElementById("Score");
+                            if (hd == null) {
+                                hd = document.createElement("h1");
+                                hd.id = "Score";
+                                var game = document.querySelector(".game");
+                                game.appendChild(hd);
+                            }
+                            hd.textContent = "Game Over!";
+                            return;
+                        }
+                    for (var j = 1; j < 20; ++j) {
                         var flag = true;
                         for (var i = 0; i < 10; ++i)
                             if (map[i][j] == 0) flag = false;
-                        if (flag == true) {
-                            for (var i = 0; i < 10; ++i) {
-                                map[i][0] = 0;
-                                for (var k = j; k > 0; --k)
-                                    map[i][k] = map[i][k - 1];
-                            }
-                            var blks = document.getElementsByClassName("block");
-                            var shdw = document.getElementsByClassName("shadow");
-
-                            for (var k = 0; k < blks.length; ++k) {
-                                var t = parseFloat(blks[k].style.top.substring(0,blks[k]. style.top.length - 2));
-                                if (t < j * sz) 
-                                     blks[k].style.top = t + sz + 'vh';
-                                else if (t == j * sz) 
-                                    blks[k--].remove();
-                            }
-                            for (var k = 0; k < shdw.length; ++k) {
-                                var t = parseFloat(shdw[k].style.top.substring(0,shdw[k]. style.top.length - 2));
-                                if (t < j * sz) 
-                                     shdw[k].style.top = t + sz + 'vh';
-                                else if (t == j * sz) 
-                                    shdw[k--].remove();
-                            }
+                            if (flag == true) {
+                                var hd = document.getElementById("Score");
+                                if (hd == null) {
+                                    hd = document.createElement("h1");
+                                    hd.id = "Score";
+                                    var game = document.querySelector(".game");
+                                    game.appendChild(hd);
+                                }
+                                hd.textContent = ++score;
+                                for (var i = 0; i < 10; ++i) {
+                                    map[i][0] = 0;
+                                    for (var k = j; k > 0; --k)
+                                        map[i][k] = map[i][k - 1];
+                                }
+                                var blks = document.getElementsByClassName("block");
+                                var shdw = document.getElementsByClassName("shadow");
+                                for (var k = 0; k < blks.length; ++k) {
+                                    var t = parseFloat(blks[k].style.top.substring(0,blks[k]. style.top.length - 2));
+                                    if (t < j * sz) falling_objects.push(blks[k]);
+                                    else if (t == j * sz) removing_objects.push(blks[k]);
+                                }
+                                for (var k = 0; k < shdw.length; ++k) {
+                                    var t = parseFloat(shdw[k].style.top.substring(0,shdw[k]. style.top.length - 2));
+                                    if (t < j * sz) falling_objects.push(shdw[k]);
+                                    else if (t == j * sz) removing_objects.push(shdw[k]);
+                                }
+                                for (var i = 0; i < removing_objects.length; ++i) 
+                                    removing_objects[i].remove();
+                                var cnt = 0;
+                                var act = setInterval (function() {
+                                    if (cnt >= 4.5) clearInterval(act);
+                                    else {
+                                        cnt += 0.5;
+                                        for (var i = 0; i < falling_objects.length; ++i) {
+                                            var t = parseFloat(falling_objects[i].style.top.substring(0,falling_objects[i].style.top.length - 2));
+                                            falling_objects[i].style.top = (t + 0.5) + 'vh';
+                                        }
+                                    }
+                                }, 10);
                         }
-                        
                     }
                     setTimeout(function () {
                         make_new = -2;
                         for (var i = 0; i < 4; ++i)
                             if (now_obj_draw[i][1])
-                                now_obj_draw[i][1].style.boxShadow = "0 0 1vh rgba(255, 123, 161, 1)";
+                                now_obj_draw[i][1].style.boxShadow = "0 0 1vh rgba(" + shadow_color[now_obj[3]] + ", 0.5)";
                         make_new = true;
                     }, 100);
                 }
@@ -334,6 +482,7 @@
                         obj_moved[1] = now_obj[1].slice();
                         obj_moved[2] = now_obj[2];
                         obj_moved[1][1]+= 0.5;
+                        obj_moved[3] = now_obj[3];
 
                         var flag = false;
                         for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
