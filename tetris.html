@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>块！</title>
+        <style>
+            .game {
+                width: 45vh;
+                height: 90vh;
+                position: absolute;
+                left : 50%;
+                Top : 2%;
+                transform: translate(-50%);
+                box-shadow: 0 0 10px rgba(13, 91, 194, 0.4);
+                background-image: url("bkg.png");
+                background-repeat: repeat;
+                background-size: 10% 5%;
+                display: grid;
+                grid-template-columns: repeat(10, 1fr);
+                grid-template-rows: repeat(20, 1fr);
+            }
+            .blk {
+                background-image: url(rblk.png);
+                background-size: 100% 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class = "game">
+            <script>
+                var allblocks = [
+                    [   [0, 0, 0, 0],
+                        [0, 1, 1, 0],
+                        [0, 1, 1, 0],
+                        [0, 0, 0, 0] //O 0
+                    ],
+                    [   [0, 1, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 1, 0, 0] //I1 1
+                    ],
+                    [   [0, 0, 0, 0],
+                        [1, 1, 1, 1],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0] //I2 2
+                    ],
+                    [   [0, 0, 1, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 1, 1],
+                        [0, 0, 0, 0] //L1 3
+                    ],
+                    [   [0, 0, 0, 1],
+                        [0, 1, 1, 1],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0] //L2 4
+                    ],
+                    [   [0, 1, 1, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 0] //L3 5
+                    ],
+                    [   [0, 0, 0, 0],
+                        [0, 1, 1, 1],
+                        [0, 1, 0, 0],
+                        [0, 0, 0, 0] //L4 6
+                    ],
+                    [   [0, 0, 1, 0],
+                        [0, 0, 1, 0],
+                        [0, 1, 1, 0],
+                        [0, 0, 0, 0] //J1 7
+                    ],
+                    [   [0, 0, 0, 0],
+                        [0, 1, 1, 1],
+                        [0, 0, 0, 1],
+                        [0, 0, 0, 0] //J2 8
+                    ],
+                    [   [0, 0, 1, 1],
+                        [0, 0, 1, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 0] //J3 9
+                    ],
+                    [   [0, 1, 0, 0],
+                        [0, 1, 1, 1],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0] //J4 10
+                    ],
+                    [   [0, 0, 0, 0],
+                        [0, 0, 1, 1],
+                        [0, 1, 1, 0],
+                        [0, 0, 0, 0] //S1 11
+                    ],
+                    [   [0, 0, 1, 0],
+                        [0, 0, 1, 1],
+                        [0, 0, 0, 1],
+                        [0, 0, 0, 0] //S2 12
+                    ],
+                    [   [0, 0, 0, 0],
+                        [0, 1, 1, 0],
+                        [0, 0, 1, 1],
+                        [0, 0, 0, 0] //Z1 13
+                    ],
+                    [   [0, 0, 1, 0],
+                        [0, 1, 1, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 0, 0] //Z2 14
+                    ],
+                    [   [0, 0, 1, 0],
+                        [0, 1, 1, 1],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0] //T1 15
+                    ],
+                    [   [0, 0, 1, 0],
+                        [0, 1, 1, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 0] //T1 16
+                    ],
+                    [   [0, 0, 0, 0],
+                        [0, 1, 1, 1],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 0] //T1 17
+                    ],
+                    [   [0, 0, 1, 0],
+                        [0, 0, 1, 1],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 0] //T1 18
+                    ],
+                ];
+                var map = []; var score;
+                var make_new;
+                for (var i = 0; i < 10; ++i) {
+                    map[i] = [];
+                    for (var j = 0; j < 20; ++j)
+                        map[i][j] = 0;
+                }
+                score = 0;
+                make_new = true;
+
+                var now_obj; // 5x5grip, [x, y](左上角), 类型, 颜色
+                var now_obj_draw; // 绘制对象
+                var cnt = 0;
+
+                document.addEventListener("keydown", function movement(e) {
+
+                    if (e.keyCode >= 37 && e.keyCode <= 40) {
+                        var obj_moved = [];
+                        obj_moved[0] = now_obj[0];
+                        obj_moved[1] = now_obj[1].slice();
+                        obj_moved[2] = now_obj[2];
+
+                            
+                        if (e.keyCode == 38) { //上箭头
+                                    //[O,I1,I2,L1,L2,L3,L4,J1,J2,J3, J4, S1, S2, Z1, Z2, T1, T2, T3, T4
+                                    //[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
+                            var idx = [0, 2, 1, 4, 5, 6, 3, 8, 9, 10, 7, 12, 11, 14, 13, 16, 17, 18, 15]
+                            obj_moved[2] = idx[obj_moved[2]];
+                            obj_moved[0] = allblocks[obj_moved[2]];
+                        }
+                        if (e.keyCode == 37) { //左箭头
+                            obj_moved[1][0]--;
+                        }
+                        if (e.keyCode == 39) { //右箭头
+                            obj_moved[1][0]++;
+                        }
+                        if (e.keyCode == 40) { //下箭头
+                            obj_moved[1][1]++;
+                        }
+                    
+                        //移动后判定
+                        for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
+                            if ((obj_moved[1][0] + i < 0 || obj_moved[1][0] + i >= 10 || obj_moved[1][1] + j >= 20)) return; //边界判定
+                            if (obj_moved[1][1] + j >= 0 && map[obj_moved[1][0] + i][obj_moved[1][1] + j] == 1) return;   //碰撞
+                        }
+
+                        //判定成功
+                        now_obj = obj_moved;
+
+                        var cnt = 0
+                        for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) {
+                            now_obj_draw[cnt].id = "blk" + (now_obj[1][0] + i) + "_" + (now_obj[1][1] + j);
+                            now_obj_draw[cnt].style.gridColumn = now_obj[1][0] + i + 1;
+                            now_obj_draw[cnt].style.gridRow = now_obj[1][1] + j + 1;
+                            cnt++;
+                        }
+                    }
+                });
+
+                function gaming() {
+                    if (make_new == true) {
+                        now_obj = [[], [5, 0], Math.floor(Math.random() * 19), Math.floor(Math.random() * 4)];
+                        now_obj[0] = allblocks[now_obj[2]];
+                        var game = document.querySelector(".game");
+                        now_obj_draw = []; var cnt = 0;
+                        for (var i = 0; i < 4; ++i) {
+                            for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) 
+                            {
+                                var block = document.createElement("blk");
+                                block.style.backgroundImage = 'url("rblk.png")';
+                                block.style.backgroundSize = "100% 100%";
+                                block.style.gridColumn = now_obj[1][0] + i + 1;
+                                block.style.gridRow = now_obj[1][1] + j + 1;
+                                block.id = "blk" + (now_obj[1][0] + i) + "_" + (now_obj[1][1] + j);
+                                now_obj_draw[cnt++] = block;
+                                game.appendChild(block);
+                            }
+                        }
+                        make_new = false;
+                    }
+                    
+                }
+                function drop() {
+                    if (make_new == false) {
+                        var obj_moved = [];
+                        obj_moved[0] = now_obj[0];
+                        obj_moved[1] = now_obj[1].slice();
+                        obj_moved[2] = now_obj[2];
+                        obj_moved[1][1]++;
+
+                        var flag = false;
+                        for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
+                            if (obj_moved[1][1] + j >= 20) flag = true; //边界判定
+                            if (obj_moved[1][1] + j >= 0 && map[obj_moved[1][0] + i][obj_moved[1][1] + j] == 1) flag = true;   //碰撞
+                        }
+                        
+                        if (flag == false)
+                            now_obj = obj_moved;
+                        if (flag == true) {
+                            for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j])
+                            map[now_obj[1][0] + i][now_obj[1][1] + j] = 1;
+                            make_new = true;
+                        }
+                        var cnt = 0
+                        for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) {
+                            now_obj_draw[cnt].id = "blk" + (now_obj[1][0] + i) + "_" + (now_obj[1][1] + j);
+                            now_obj_draw[cnt].style.gridColumn = now_obj[1][0] + i + 1;
+                            now_obj_draw[cnt].style.gridRow = now_obj[1][1] + j + 1;
+                            cnt++;
+                        }
+                    }
+                }
+
+
+                setInterval(gaming, 1);
+                setInterval(drop, 300);
+
+            </script>
+        </id> 
+    </body>
+</html>
