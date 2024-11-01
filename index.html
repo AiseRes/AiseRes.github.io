@@ -288,15 +288,41 @@
 
                 function check () {
 
-                    // for (var j = 19; j >= 0; --j) {
-                    //     for （var
-                    // }
+                    for (var j = 0; j < 20; ++j) {
+                        var flag = true;
+                        for (var i = 0; i < 10; ++i)
+                            if (map[i][j] == 0) flag = false;
+                        if (flag == true) {
+                            for (var i = 0; i < 10; ++i) {
+                                map[i][0] = 0;
+                                for (var k = j; k > 0; --k)
+                                    map[i][k] = map[i][k - 1];
+                            }
+                            var blks = document.getElementsByClassName("block");
+                            var shdw = document.getElementsByClassName("shadow");
 
-
+                            for (var k = 0; k < blks.length; ++k) {
+                                var t = parseFloat(blks[k].style.top.substring(0,blks[k]. style.top.length - 2));
+                                if (t < j * sz) 
+                                     blks[k].style.top = t + sz + 'vh';
+                                else if (t == j * sz) 
+                                    blks[k--].remove();
+                            }
+                            for (var k = 0; k < shdw.length; ++k) {
+                                var t = parseFloat(shdw[k].style.top.substring(0,shdw[k]. style.top.length - 2));
+                                if (t < j * sz) 
+                                     shdw[k].style.top = t + sz + 'vh';
+                                else if (t == j * sz) 
+                                    shdw[k--].remove();
+                            }
+                        }
+                        
+                    }
                     setTimeout(function () {
                         make_new = -2;
                         for (var i = 0; i < 4; ++i)
-                            now_obj_draw[i][1].style.boxShadow = "0 0 1vh rgba(255, 123, 161, 1)";
+                            if (now_obj_draw[i][1])
+                                now_obj_draw[i][1].style.boxShadow = "0 0 1vh rgba(255, 123, 161, 1)";
                         make_new = true;
                     }, 100);
                 }
@@ -317,9 +343,17 @@
                             else if (map[Math.floor(x / sz)][Math.ceil(y / sz)] == 1) { flag = true; break } //碰撞
                         }
                         
-                        if (flag == false)
+                        if (flag == false) {
                             now_obj = obj_moved;
-
+                            var cnt = 0;
+                            for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) {
+                                var x = now_obj[1][0] + i * sz;
+                                var y = now_obj[1][1] + j * sz;
+                                now_obj_draw[cnt][0].style.left = now_obj_draw[cnt][1].style.left = x + 'vh';
+                                now_obj_draw[cnt][0].style.top = now_obj_draw[cnt][1].style.top = y + 'vh';
+                                cnt++;
+                            }
+                        }
                         if (flag == true) {
                             now_obj[1][1] = obj_moved[1][1] = Math.round(obj_moved[1][1] / sz) * sz;
                             now_obj[1][0] = obj_moved[1][0] = Math.round(obj_moved[1][0] / sz) * sz;
@@ -334,16 +368,8 @@
                             }
                             make_new = -1;
                             check();
-                        }
-
-                        var cnt = 0;
-                        for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) {
-                            var x = now_obj[1][0] + i * sz;
-                            var y = now_obj[1][1] + j * sz;
-                            now_obj_draw[cnt][0].style.left = now_obj_draw[cnt][1].style.left = x + 'vh';
-                            now_obj_draw[cnt][0].style.top = now_obj_draw[cnt][1].style.top = y + 'vh';
-                            cnt++;
-                        }
+                            return;
+                        }    
                     }
                 }
 
