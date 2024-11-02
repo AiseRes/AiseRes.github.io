@@ -24,10 +24,9 @@
                 Top : 2%;
                 transform: translate(-50%);
                 background-color: rgb(0, 0, 0);
-                box-shadow: 0 0 5vh rgba(7, 62, 94, 0.8);
+                box-shadow: 0 0 5vh rgba(181, 225, 255, 0.8);
                 /* border: 5px solid rgb(59, 59, 59); */
                 overflow: hidden;
-                
                 background-repeat: repeat;
                 background-size: 10% 5%;
             
@@ -44,12 +43,22 @@
                 width: 4.5vh;
                 height: 4.5vh;
                 z-index: -1;
-                box-shadow: 0 0 1vh rgba(0, 0, 0, 0.1);
+            }
+            .particle {
+                left: 50%;
+                top: 50%;
+                width: 0.3vh;
+                height: 0.3vh;
+                background-color: rgb(255, 255, 255);
+                border-radius: 50%;
+                position: absolute;
+                box-shadow: 0 0 5vh 1vh rgba(255, 255, 255, 0.3);
             }
         </style>
     </head>
     <body>
         <div class = "game">
+            <!-- <div class = "particle"></div> -->
             <script>
                 var score = 0;
                 var allblocks = [
@@ -197,15 +206,14 @@
                         if (Math.abs(markx2 - markx1) <= 0.05) markx2 = markx1
                         if (Math.abs(marky2 - marky1) <= 0.05) marky2 = marky1
                     }
-                }
-                setInterval(tail, 10);
+                } setInterval(tail, 10);
 
                 setInterval(function() {
                     if (make_new == false || make_new == -1) {
                         lenx = markx2 - markx1;
                         leny = marky2 - marky1;
                         for (var i = 0; i < 4; ++i)
-                            now_obj_draw[i][1].style.boxShadow = lenx + "vh " + leny + "vh 1vh rgba(" + shadow_color[now_obj[3]] + ", 0.5)";
+                            now_obj_draw[i][1].style.boxShadow = lenx + "vh " + leny + "vh 4.5vh rgba(" + shadow_color[now_obj[3]] + ", 0.4)";
                     }
                 }, 5);
 
@@ -223,8 +231,8 @@
                                 for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
                                     var x = obj_moved[1][0] + i * sz + sz * 0.5 + dir * dist;
                                     var y = obj_moved[1][1] + j * sz + sz;
-                                    if (x < 0 || x > 10 * sz || y >= 20 * sz) return; //边界判定
-                                    else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) return;   //碰撞
+                                    if (x < 0 || x > 10 * sz || y >= 20 * sz) { return; } //边界判定
+                                    else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) { return; }   //碰撞
                                 }
                                 now_obj = obj_moved;
                             }
@@ -280,95 +288,10 @@
                             }
                         }
                     }
-                });
-                
-                var startX, startY;
-                document.addEventListener('touchstart', function(e) {
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                });
-                document.addEventListener('touchend', function(e) {
-                    var distanceX = e.changedTouches[0].clientX - startX;
-                    var distanceY = e.changedTouches[0].clientY - startY;
-            
-                    if (Math.abs(distanceX) > Math.abs(distanceY)) {
-                        if (dist == 0 && make_new == false) {
-                            var obj_moved = [];
-                            obj_moved[0] = now_obj[0];
-                            obj_moved[1] = now_obj[1].slice();
-                            obj_moved[2] = now_obj[2];
-                            obj_moved[3] = now_obj[3]
-                            if (distanceX < 0) obj_moved[1][0]-= 4.5;
-                            else obj_moved[1][0]+= 4.5
-                            for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
-                                var x = obj_moved[1][0] + i * sz + sz * 0.5 + dir * dist;
-                                var y = obj_moved[1][1] + j * sz + sz * 0.5;
-                                if (x < 0 || x > 10 * sz || y > 20 * sz) return; //边界判定
-                                else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) return;   //碰撞
-
-                                if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1 || map[Math.floor(x / sz)][Math.ceil(y / sz)] == 1)
-                                    now_obj[1][1] = obj_moved[1][1] = Math.round(obj_moved[1][1] / sz) * sz;
-                            }
-                            //判定成功
-                            //now_obj = obj_moved;
-                            if (dist == 0) {
-                                if (distanceX < 0) { dist = 4.5; dir = -1; a_move = setInterval(A_move, 1); }
-                                else { dist = 4.5; dir = 1; a_move = setInterval(A_move, 1); }
-                            }
-                            return;
-                        }
-                    } else {
-                        if (distanceY > 0 && make_new == false && dist == 0) { //下滑动
-                            now_obj[1][0] = Math.floor(now_obj[1][0] / sz) * sz;
-                                while (1) {
-                                    var obj_moved = [];
-                                    obj_moved[0] = now_obj[0];
-                                    obj_moved[1] = now_obj[1].slice();
-                                    obj_moved[2] = now_obj[2];
-                                    obj_moved[1][1] += 4.5;
-                                    obj_moved[3] = now_obj[3];
-                                    for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
-                                        var x = obj_moved[1][0] + i * sz + sz * 0.5 + dir * dist;
-                                        var y = obj_moved[1][1] + j * sz + sz;
-                                        if (x < 0 || x > 10 * sz || y >= 20 * sz) return; //边界判定
-                                        else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) return;   //碰撞
-                                    }
-                                    now_obj = obj_moved;
-                                }                     
-                        }
-                        if (distanceY < 0 && make_new == false) {
-                            var obj_moved = [];
-                            obj_moved[0] = now_obj[0];
-                            obj_moved[1] = now_obj[1].slice();
-                            obj_moved[2] = now_obj[2];
-                            obj_moved[3] = now_obj[3]
-                            var idx = [0, 2, 1, 6, 3, 4, 5, 10, 7, 8, 9, 12, 11, 14, 13, 18, 15, 16, 17]
-                            obj_moved[2] = idx[obj_moved[2]];
-                            obj_moved[0] = allblocks[obj_moved[2]];
-                            for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
-                                var x = obj_moved[1][0] + i * sz + sz * 0.5 + dir * dist;
-                                var y = obj_moved[1][1] + j * sz + sz * 0.5;
-                                if (x < 0 || x > 10 * sz || y > 20 * sz) return; //边界判定
-                                else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) return;   //碰撞
-
-                                if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1 || map[Math.floor(x / sz)][Math.ceil(y / sz)] == 1)
-                                    now_obj[1][1] = obj_moved[1][1] = Math.round(obj_moved[1][1] / sz) * sz;
-                                now_obj = obj_moved;
-                                var cnt = 0;
-                                for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) {
-                                    var x = now_obj[1][0] + i * sz;
-                                    var y = now_obj[1][1] + j * sz;
-                                    now_obj_draw[cnt][0].style.left = now_obj_draw[cnt][1].style.left = x + 'vh';
-                                    now_obj_draw[cnt][0].style.top = now_obj_draw[cnt][1].style.top = y + 'vh';
-                                    cnt++;
-                                }
-                            }
-                        }
-                    }                                                                                                                                                                          
-            });
-                
+                }); 
                 
                 function sleep(time) { return new Promise((resolve) => setTimeout(resolve, time)); }
+
                 function spawn() {
                     if (make_new == true) {
                         markx1 = markx2 = 2 * sz;
@@ -390,7 +313,7 @@
                                 var shadow = document.createElement("div");
                                 block.className = "block";
                                 block.style.backgroundImage = 'url("' + col[now_obj[3]] + ".png" + '")';
-                                block.style.boxShadow = "0 0 1vh rgba(" + shadow_color[now_obj[3]] + ", 0.5)";
+                                block.style.boxShadow = "0 0 4.5vh rgba(" + shadow_color[now_obj[3]] + ", 0.4)";
                                 shadow.className = "shadow";
                                 var x = now_obj[1][0] + i * sz;
                                 var y = now_obj[1][1] + j * sz;
@@ -405,7 +328,7 @@
                         make_new = false;
                     }
                 }
-               
+                function getnum(s) { return parseFloat(s.substring(0,s - 2)); }
                 function check () {
                     var falling_objects = [];
                     var removing_objects = [];
@@ -451,8 +374,15 @@
                                     if (t < j * sz) falling_objects.push(shdw[k]);
                                     else if (t == j * sz) removing_objects.push(shdw[k]);
                                 }
-                                for (var i = 0; i < removing_objects.length; ++i) 
+                                for (var i = 0; i < removing_objects.length; ++i) {
+                                    if (removing_objects[i].className == "block") {
+                                        var x = parseFloat(removing_objects[i].style.left.substring(0,removing_objects[i]. style.left.length - 2));
+                                        var y = parseFloat(removing_objects[i].style.top.substring(0,removing_objects[i]. style.top.length - 2));
+                                        var color = removing_objects[i].style.boxShadow.substring(0, removing_objects[i].style.boxShadow.indexOf(')') - 5) + ')';
+                                        bomb(x, y, color)
+                                    }
                                     removing_objects[i].remove();
+                                }
                                 var cnt = 0;
                                 var act = setInterval (function() {
                                     if (cnt >= 4.5) clearInterval(act);
@@ -470,7 +400,7 @@
                         make_new = -2;
                         for (var i = 0; i < 4; ++i)
                             if (now_obj_draw[i][1])
-                                now_obj_draw[i][1].style.boxShadow = "0 0 1vh rgba(" + shadow_color[now_obj[3]] + ", 0.5)";
+                                now_obj_draw[i][1].style.boxShadow = "0 0 14.5(" + shadow_color[now_obj[3]] + ", 0.4)";
                         make_new = true;
                     }, 100);
                 }
@@ -481,7 +411,7 @@
                         obj_moved[0] = now_obj[0];
                         obj_moved[1] = now_obj[1].slice();
                         obj_moved[2] = now_obj[2];
-                        obj_moved[1][1]+= 0.2 + score / 100;
+                        obj_moved[1][1]+= 0.2 + score / 200;
                         obj_moved[3] = now_obj[3];
 
                         var flag = false;
@@ -522,10 +452,49 @@
                     }
                 }
 
-
                 setInterval(spawn, 1);
                 setInterval(drop, 10);
-
+                function bomb(x, y, color) {
+                    var particle = [];
+                    var num = 3;
+                    for (var i = 0; i < num; ++i) { 
+                        particle[i] = [];
+                        particle[i][0] = document.createElement("div")
+                        particle[i][0].className = "particle";
+                        particle[i][0].style.left = (x + Math.random()) + 'vh';
+                        particle[i][0].style.top = (y + Math.random()) + 'vh';
+                        particle[i][0].style.boxShadow = "0 0 5vh 1vh " + color;
+                        particle[i][0].style.backgroundColor = color;
+                        particle[i][1] = Math.random() - 0.5;
+                        particle[i][2] = Math.random() - 0.5;
+                        particle[i][3] = 1;
+                        Math.random()
+                        var game = document.querySelector(".game");
+                        game.appendChild(particle[i][0]);
+                    }
+                    var cnt = 0;
+                    var a = setInterval(function() {
+                        for (var i = 0; i < num; ++i) { 
+                            var x = parseFloat(particle[i][0].style.left.substring(0, particle[i][0].style.left.length - 2));
+                            var y = parseFloat(particle[i][0].style.top.substring(0, particle[i][0].style.top.length - 2));
+                            particle[i][0].style.left = (x + particle[i][1]) + 'vh';
+                            particle[i][0].style.top = (y + particle[i][2]) + 'vh';
+                            particle[i][0].style.opacity = particle[i][3];
+                            particle[i][1] *= 0.99;
+                            particle[i][2] *= 0.99;
+                            if (particle[i][3] > 0)
+                                particle[i][3] -= 0.01;
+                            else particle[i][3] = 0;
+                        }
+                        cnt++;
+                        if (cnt == 100) {
+                            for (var i = 0; i < num; ++i)
+                                particle[i][0].remove();
+                            clearInterval(a);
+                        }
+                    }, 10);
+                    
+                }
             </script>
         </id> 
     </body>
