@@ -6,12 +6,13 @@
         <style>
             body {
                 background-color: black;
+                overflow: hidden;
             }
             h1 {
                 z-index: -1;
                 font-size: 15vh;
                 left: calc(50% + 23.5vh);
-                top: 20%;
+                top: 30%;
                 color: rgba(227, 227, 227, 0.8);
                 text-shadow: 0 0 2vh rgb(116, 150, 159);
                 position: absolute;
@@ -21,12 +22,12 @@
                 height: 90vh;
                 position: absolute;
                 left : calc(50% - 22.5vh);
-                Top : 2%;
+                Top : 0%;
                 transform-origin : 50% 0%;
                 background-color: rgb(0, 0, 0);
                 box-shadow: 0 0 30vh 5vh rgba(51, 131, 151, 0.2);
                 /* border: 5px solid rgb(59, 59, 59); */
-                overflow: hidden;
+                /* overflow: hidden; */
                 background-repeat: repeat;
                 background-size: 10% 5%;
             
@@ -42,17 +43,18 @@
                 position: absolute;
                 width: 4.5vh;
                 height: 4.5vh;
-                z-index: -1;
+                /* z-index: -1; */
             }
             .particle {
                 left: 50%;
                 top: 50%;
-                width: 0.3vh;
-                height: 0.3vh;
+                width: 0.5vh;
+                height: 0.5vh;
                 background-color: rgb(255, 255, 255);
                 border-radius: 50%;
                 position: absolute;
                 box-shadow: 0 0 5vh 1vh rgba(255, 255, 255, 0.3);
+                 z-index: 100;
             }
             .light {
                 left: 50%;
@@ -61,7 +63,21 @@
                 height: 13.5vh;
                 background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
                 position: absolute;
-                z-index: -1;
+                /* z-index: -1; */
+            }
+            .nxt_block {
+                width: 4.5vh;
+                height: 4.5vh;
+                position: absolute;
+                background-image: url("rblk.png");
+                background-size: 100% 100%;
+                /* z-index: -1; */
+            }
+            .nxt_shadow {
+                position: absolute;
+                width: 4.5vh;
+                height: 4.5vh;
+                /* z-index: -1; */
             }
         </style>
     </head>
@@ -176,7 +192,55 @@
             var window_angle = 0, now_window_angle = 0;
             var markx1, markx2;
             var marky1, marky2;
+            var nxt_type = [];
+            var nxt_num = 1;
+            var nxt_s = 0;
             var lenx = 0, leny = 0;
+            var col = ["rblk", "gblk", "bblk", "yblk"];
+            var nxt_draw = [];
+            var cX = 50; cY = 15;
+            var size = 2;
+
+            initnxt_type();
+            function  initnxt_type() {
+                for (var i = 0; i < nxt_num; ++i) {
+                    //[O,I1,I2,L1,L2,L3,L4,J1,J2,J3, J4, S1, S2, Z1, Z2, T1, T2, T3, T4
+                    //[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
+                    var list = [[0], [1, 2], [3, 4, 5, 6], [7, 8, 9, 10], [11, 12], [13, 14], [15, 16, 17, 18]];
+                    var m = Math.floor(Math.random() * 7);
+                    var n = Math.floor(Math.random() * list[m].length);
+                    nxt_type[i] = [list[m][n], Math.floor(Math.random() * 4)];
+                    nxt_draw[i] = []
+                }
+                var game = document.querySelector(".game");
+                for (var i = 0; i < nxt_num; ++i) {
+                    var obj = allblocks[nxt_type[(nxt_s + i) % nxt_num][0]];
+                    var ox = 0, oy = 0;
+                    for (var x = 0; x < 4; ++x) for (var y = 0; y < 4; ++y) if (obj[x][y]) {
+                        ox += x;
+                        oy += y;
+                    } ox /= 4; oy /= 4;
+                    for (var x = 0; x < 4; ++x) for (var y = 0; y < 4; ++y) if (obj[x][y]) {
+                        var block = document.createElement("div");
+                        var shadow = document.createElement("div");
+                        block.className = "nxt_block";
+                        block.style.backgroundImage = 'url("' + col[nxt_type[(nxt_s + i) % nxt_num][1]] + ".png" + '")';
+                        shadow.className = "nxt_shadow";
+                        shadow.style.boxShadow = 0 + "vh " + 0 + "vh 4.5vh rgba(" + shadow_color[nxt_type[(nxt_s + i) % nxt_num][1]] + ", 0.4)";
+                        shadow.style.width = block.style.width = size + 'vh';
+                        shadow.style.height = block.style.height = size + 'vh';
+                        var l = cX + (x - ox) * size;
+                        var t = cY + (y - oy) * size + (i - 1) * 4.5 * size;
+
+                        shadow.style.left = block.style.left = l + 'vh';
+                        shadow.style.top = block.style.top = t + 'vh';
+
+                        nxt_draw[i].push([block, shadow]);
+                        game.appendChild(block);
+                        game.appendChild(shadow);
+                    }
+                }
+            };
             for (var i = 0; i < 10; ++i) {
                 map[i] = [];
                 for (var j = 0; j < 20; ++j)
@@ -215,14 +279,16 @@
                 if (make_new == true) {
                     markx1 = markx2 = 2 * sz;
                     marky1 = marky2 = -2 * sz;
-                    //[O,I1,I2,L1,L2,L3,L4,J1,J2,J3, J4, S1, S2, Z1, Z2, T1, T2, T3, T4
-                    //[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
+                    
+                    now_obj = [[], [2 * sz, -4 * sz], nxt_type[nxt_s][0], nxt_type[nxt_s][1]];
+                    now_obj[0] = allblocks[now_obj[2]];
+
                     var list = [[0], [1, 2], [3, 4, 5, 6], [7, 8, 9, 10], [11, 12], [13, 14], [15, 16, 17, 18]];
                     var m = Math.floor(Math.random() * 7);
                     var n = Math.floor(Math.random() * list[m].length);
-                    var col = ["rblk", "gblk", "bblk", "yblk"];
-                    now_obj = [[], [2 * sz, -4 * sz], list[m][n], Math.floor(Math.random() * 4)];
-                    now_obj[0] = allblocks[now_obj[2]];
+                    nxt_type[nxt_s][0] = list[m][n];
+                    nxt_type[nxt_s][1] = Math.floor(Math.random() * 4);
+
                     var game = document.querySelector(".game");
                     now_obj_draw = []; var cnt = 0;
                     for (var i = 0; i < 4; ++i) {
@@ -244,6 +310,44 @@
                             game.appendChild(shadow);
                         }
                     }
+
+                    for (var x = 0; x < 4; ++x) {
+                        nxt_draw[nxt_s][x][1].remove();
+                        nxt_draw[nxt_s][x][0].remove();
+                    } nxt_draw[nxt_s] = [];
+                    for (var i = 0; i < nxt_num; ++i) if (i != nxt_s)
+                        for (var j = 0; j < 4; ++j) for (var k = 0; k < 2; ++k) {
+                            var y = parseFloat(nxt_draw[i][j][k].style.top.substring(0, nxt_draw[i][j][k].style.top.length - 2));
+                            nxt_draw[i][j][k].style.top = (y - 4.5 * size) + 'vh';
+                        }
+                
+                    var obj = allblocks[nxt_type[nxt_s][0]];
+                    var ox = 0, oy = 0;
+                    for (var x = 0; x < 4; ++x) for (var y = 0; y < 4; ++y) if (obj[x][y]) {
+                        ox += x;
+                        oy += y;
+                    } ox /= 4; oy /= 4;
+                    for (var x = 0; x < 4; ++x) for (var y = 0; y < 4; ++y) if (obj[x][y]) {
+                        var block = document.createElement("div");
+                        var shadow = document.createElement("div");
+                        block.className = "nxt_block";
+                        block.style.backgroundImage = 'url("' + col[nxt_type[nxt_s][1]] + ".png" + '")';
+                        shadow.className = "nxt_shadow";
+                        shadow.style.boxShadow = 0 + "vh " + 0 + "vh 4.5vh rgba(" + shadow_color[nxt_type[nxt_s][1]] + ", 0.4)";
+                        shadow.style.width = block.style.width = size + 'vh';
+                        shadow.style.height = block.style.height = size + 'vh';
+                        var l = cX + (x - ox) * size;
+                        var t = cY + (y - oy) * size + (nxt_num - 2) * 4.5 * size;
+
+                        shadow.style.left = block.style.left = l + 'vh';
+                        shadow.style.top = block.style.top = t + 'vh';
+
+                        nxt_draw[nxt_s].push([block, shadow]);
+                        game.appendChild(block);
+                        game.appendChild(shadow);
+                    }
+                    nxt_s = (nxt_s + 1) % nxt_num;
+
                     make_new = false;
                 }
             }
@@ -271,8 +375,8 @@
                             if (hd == null) {
                                 hd = document.createElement("h1");
                                 hd.id = "Score";
-                                var body = document.querySelector("body");
-                                body.appendChild(hd);
+                                var game = document.querySelector(".game");
+                                game.appendChild(hd);
                             }
                             hd.textContent = ++score;
                             for (var i = 0; i < 10; ++i) {
@@ -289,7 +393,7 @@
                                 } else if (y == j * sz) {
                                     var x = parseFloat(blks[k].style.left.substring(0,blks[k]. style.left.length - 2));
                                     var color = blks[k].style.boxShadow.substring(0, blks[k].style.boxShadow.indexOf(')') - 5) + ')';
-                                    bomb(x, y, color)
+                                    bomb(x, y, color, 1)
                                     blks[k--].remove();
                                 }
                             }
@@ -409,6 +513,8 @@
                     for (var i = 0; i < num; ++i) { 
                         var x = parseFloat(particle[i][0].style.left.substring(0, particle[i][0].style.left.length - 2));
                         var y = parseFloat(particle[i][0].style.top.substring(0, particle[i][0].style.top.length - 2));
+                        if (y + particle[i][2] > 90 - 1) particle[i][2] *= -1;
+                        if (x + particle[i][1] < 0 || x + particle[i][1] > 45) particle[i][1] *= -1;
                         particle[i][0].style.left = (x + particle[i][1]) + 'vh';
                         particle[i][0].style.top = (y + particle[i][2]) + 'vh';
                         particle[i][0].style.opacity = particle[i][3];
