@@ -220,18 +220,18 @@
                 document.addEventListener("keydown", function movement(e) {
 
                     if (e.keyCode == 40 && make_new == false && dist == 0) { //下箭头
-                        now_obj[1][0] = Math.floor(now_obj[1][0] / sz) * sz;
-                            while (1) {
+                        while (1) {
                                 var obj_moved = [];
                                 obj_moved[0] = now_obj[0];
                                 obj_moved[1] = now_obj[1].slice();
                                 obj_moved[2] = now_obj[2];
-                                obj_moved[1][1] += 4.5;
+                                obj_moved[1][1] += sz;
+                                obj_moved[1][1] = Math.ceil(obj_moved[1][1] / sz) * sz;
                                 obj_moved[3] = now_obj[3];
                                 for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
-                                    var x = obj_moved[1][0] + i * sz + sz * 0.5 + dir * dist;
-                                    var y = obj_moved[1][1] + j * sz + sz;
-                                    if (x < 0 || x > 10 * sz || y >= 20 * sz) { return; } //边界判定
+                                    var x = obj_moved[1][0] + i * sz;
+                                    var y = obj_moved[1][1] + j * sz;
+                                    if (x < 0 || x > 10 * sz || y > 19.5 * sz) { return; } //边界判定
                                     else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) { return; }   //碰撞
                                 }
                                 now_obj = obj_moved;
@@ -260,15 +260,19 @@
 
                         //移动后判定
                         for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
-                            var x = obj_moved[1][0] + i * sz + sz * 0.5 + dir * dist;
-                            var y = obj_moved[1][1] + j * sz + sz * 0.5;
-                            if (x < 0 || x > 10 * sz || y > 20 * sz) return; //边界判定
-                            else if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1) return;   //碰撞
-
-                            if (map[Math.floor(x / sz)][Math.floor(y / sz)] == 1 || map[Math.floor(x / sz)][Math.ceil(y / sz)] == 1)
-                                now_obj[1][1] = obj_moved[1][1] = Math.round(obj_moved[1][1] / sz) * sz;
+                            var x = obj_moved[1][0] + i * sz + dir * dist;
+                            var y = obj_moved[1][1] + j * sz;
+                            if (x < 0 || x > 9 * sz || y > 20 * sz) return; //边界判定
+                            else if (map[Math.round(x / sz)][Math.ceil(y / sz)] == 1) return;   //碰撞
                         }
-                    
+
+                        for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj_moved[0][i][j] == 1) {
+                            var x = obj_moved[1][0] + i * sz + dir * dist;
+                            var y = obj_moved[1][1] + j * sz;
+                            if (map[Math.round(x / sz)][Math.floor(y / sz)] == 1) {
+                                now_obj[1][1] = obj_moved[1][1] = Math.ceil(obj_moved[1][1] / sz) * sz;
+                            }
+                        }
 
                         //判定成功
                         //now_obj = obj_moved;
@@ -456,7 +460,7 @@
                 setInterval(drop, 10);
                 function bomb(x, y, color) {
                     var particle = [];
-                    var num = 3;
+                    var num = 1;
                     for (var i = 0; i < num; ++i) { 
                         particle[i] = [];
                         particle[i][0] = document.createElement("div")
