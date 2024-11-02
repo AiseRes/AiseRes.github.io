@@ -7,6 +7,7 @@
             body {
                 background-color: black;
                 overflow: hidden;
+                /* filter: sepia(10%); */
             }
             h1 {
                 z-index: -1;
@@ -25,12 +26,12 @@
                 Top : 0%;
                 transform-origin : 50% 0%;
                 background-color: rgb(0, 0, 0);
-                box-shadow: 0 0 30vh 5vh rgba(51, 131, 151, 0.2);
+                box-shadow: 0 0 30vh 5vh rgba(30, 78, 90, 0.2);
                 /* border: 5px solid rgb(59, 59, 59); */
                 /* overflow: hidden; */
                 background-repeat: repeat;
                 background-size: 10% 5%;
-            
+             
             }
             .block {
                 width: 4.5vh;
@@ -193,7 +194,7 @@
             var markx1, markx2;
             var marky1, marky2;
             var nxt_type = [];
-            var nxt_num = 1;
+            var nxt_num = 3;
             var nxt_s = 0;
             var lenx = 0, leny = 0;
             var col = ["rblk", "gblk", "bblk", "yblk"];
@@ -604,6 +605,12 @@
             document.addEventListener("keydown", function movement(e) {
                 if (e.keyCode == 82) window.location.reload();
                 if (e.keyCode == 40 && make_new == false && dist == 0) { //下箭头
+                    for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j] == 1) {
+                        var x = now_obj[1][0] + i * sz;
+                        var y = now_obj[1][1] + j * sz + sz;
+                        if (x < 0 || x > 10 * sz || y > 19.5 * sz || map[Math.ceil(x / sz)][Math.ceil(y / sz)] == 1)
+                            return;
+                    }
                     while (1) {
                         var obj_moved = [];
                         obj_moved[0] = now_obj[0];
@@ -689,6 +696,8 @@
                 }
             }); 
             
+
+            var nowtop = 0;
             setInterval(function() {
                 if (make_new == false || make_new == -1) {
                     lenx = markx2 - markx1;
@@ -701,29 +710,32 @@
                 var game = document.querySelector(".game");
                 now_window_angle += (window_angle - now_window_angle) * 0.2;
                 // window_angle = (now_obj[1][0] - 5 * 4.5) * 0.0001;
-                window_angle *= 0.97;
+                window_angle *= 0.98;
+                nowtop *= 0.99;
                 game.style.transform = "rotate(" + now_window_angle + "deg)";
+                game.style.top = nowtop + "vh";
             }, 1);
             setInterval(spawn, 1);
             setInterval(drop, 10);
 
             function shakeY() {
-                var element = document.querySelector(".game");
-                let start = performance.now();
-                const direction = 1;
-                const distance = 2;
-                var duration = 100;
-                const step = (end) => {
-                    if (performance.now() - start < duration) {
-                        element.style.transform = `translateY(${direction * distance}px)`;
-                        requestAnimationFrame(step);
-                    } else {
-                    element.style.transform = '';
-                    }
-                    // 每次抖动方向相反
-                    // direction *= -1; 
-                };
-                requestAnimationFrame(step);
+                nowtop += 0.5;
+                // var element = document.querySelector(".game");
+                // let start = performance.now();
+                // const direction = 1;
+                // const distance = 2;
+                // var duration = 100;
+                // const step = (end) => {
+                //     if (performance.now() - start < duration) {
+                //         element.style.transform = `translateY(${direction * distance}px)`;
+                //         requestAnimationFrame(step);
+                //     } else {
+                //     element.style.transform = '';
+                //     }
+                //     // 每次抖动方向相反
+                //     // direction *= -1; 
+                // };
+                // requestAnimationFrame(step);
             }
             function shakeX() {
                 var element = document.querySelector(".game");
@@ -743,7 +755,6 @@
                 };
                 requestAnimationFrame(step);
             }
-
             var startX, startY;
             document.addEventListener('touchstart', function(e) {
                 startX = e.touches[0].clientX;
@@ -852,7 +863,6 @@
                 }                                                                                                                                                                          
             });
 
-
-</script>
+        </script>
     </body>
 </html>
