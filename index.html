@@ -719,7 +719,13 @@
             setInterval(drop, 10);
 
             function shakeY() {
-                nowtop += 0.5;
+                nowtop += 0.9;
+                // var cnt = 0, mxn = 10;
+                // window_angle = (now_obj[1][0] + 9 - 22.5) / 200;
+                // var a = setInterval(function() {
+                //     nowtop += 0.15 * (mxn - cnt) / mxn;
+                //     if (cnt++ >= mxn) clearInterval(a);
+                // }, 1);
                 // var element = document.querySelector(".game");
                 // let start = performance.now();
                 // const direction = 1;
@@ -737,7 +743,9 @@
                 // };
                 // requestAnimationFrame(step);
             }
+            // shakeX();
             function shakeX() {
+                // window_angle -= 0.5;
                 var element = document.querySelector(".game");
                 let start = performance.now();
                 const direction = 1;
