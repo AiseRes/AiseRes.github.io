@@ -653,7 +653,7 @@
                 else return;
                 if (review_opacitay < 0.3) review_opacitay += 0.005;
                 for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj[i][j] == 1) 
-                    for (var k = 0; k <= 20; ++k) if (map[Math.round((now_obj[1][0] + i * sz) / sz)][k] == 1 || k == 20)
+                    for (var k = Math.floor(now_obj[1][1] / sz + j); k <= 20; ++k) if (map[Math.round((now_obj[1][0] + i * sz) / sz)][k] == 1 || k == 20)
                         if (k - j < min) min = k - j;
                 var cnt = 0;
                 for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj[i][j] == 1) {
