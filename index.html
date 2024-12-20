@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -601,7 +602,21 @@
                     }
                 }, 1);
             }
- 
+            function draglight2(x, y, color) {
+                var particle = document.createElement("div")
+                particle.className = "light";
+                particle.style.left = x + 'vh';
+                particle.style.top = y + 'vh';
+                particle.style.background = "linear-gradient(to bottom, rgba(255, 255, 255, 0), " + color + ")";
+                particle.style.height = '4.5vh';
+                var game = document.querySelector(".game");
+                game.appendChild(particle);
+        
+                var cnt = 0; var mx = 2;
+                setTimeout(function() {
+                    particle.remove();
+                }, 2);
+            }
             document.addEventListener("keydown", function movement(e) {
                 if (e.keyCode == 82) window.location.reload();
                 if (e.keyCode == 40 && make_new == false && dist == 0) { //下箭头
@@ -695,7 +710,15 @@
                     }
                 }
             }); 
-            
+            function review_light() {
+                var min = 20;
+                for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j] == 1) 
+                    for (var k = 0; k <= 20; ++k) if (map[Math.round((now_obj[1][0] + i * sz) / sz)][k] == 1 || k == 20)
+                        if (k - j < min) min = k - j;
+                for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j] == 1) 
+                    draglight2(now_obj[1][0] + i * 4.5, min * 4.5 + j * 4.5 - 4.5, "rgba(255, 255, 255, 0.1)");
+            }
+            setInterval(review_light, 10);
 
             var nowtop = 0;
             setInterval(function() {
