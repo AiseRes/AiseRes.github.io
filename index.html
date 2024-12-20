@@ -31,7 +31,13 @@
                 /* border: 5px solid rgb(59, 59, 59); */
                 /* overflow: hidden; */
                 background-repeat: repeat;
-                background-size: 10% 5%;
+                background-size: 10% 10%;
+                
+                /* background: 
+                    linear-gradient(0deg, #2b3939 50%, transparent 0) repeat-y,
+                    linear-gradient(0deg, #2b3939 50%, transparent 0) repeat-y;
+                background-size: 2px 50px, 2px 50px;
+                background-position: 0 20%, 100% 0; */
              
             }
             .block {
@@ -56,7 +62,7 @@
                 border-radius: 50%;
                 position: absolute;
                 box-shadow: 0 0 5vh 1vh rgba(255, 255, 255, 0.3);
-                 z-index: 100;
+                z-index: 100;
             }
             .light {
                 left: 50%;
@@ -200,9 +206,12 @@
             var lenx = 0, leny = 0;
             var col = ["rblk", "gblk", "bblk", "yblk"];
             var nxt_draw = [];
+            var review_draw = [];
+            var review_opacitay = 0;
             var cX = 50; cY = 15;
             var size = 2;
-
+            var speedup = 1;
+            now_obj = [[], [2 * sz, -4 * sz], 0, 0];
             initnxt_type();
             function  initnxt_type() {
                 for (var i = 0; i < nxt_num; ++i) {
@@ -281,9 +290,18 @@
                 if (make_new == true) {
                     markx1 = markx2 = 2 * sz;
                     marky1 = marky2 = -2 * sz;
-                    
-                    now_obj = [[], [2 * sz, -4 * sz], nxt_type[nxt_s][0], nxt_type[nxt_s][1]];
-                    now_obj[0] = allblocks[now_obj[2]];
+                    review_opacitay = 0;
+                    now_obj = [[], [now_obj[1][0], -4 * sz], nxt_type[nxt_s][0], nxt_type[nxt_s][1]];
+                    now_obj[0] = allblocks[now_obj[2]].slice();
+
+                    if (now_obj[1][0] < 2 * sz) for (var i = 3; i >= 0; --i) for (var j = 0; j < 4; ++j) 
+                        if (now_obj[0][i][j]) if (now_obj[1][0] / sz + i < 0) {
+                            now_obj[1][0] += sz; break;
+                        }
+                    if (now_obj[1][0] > 2 * sz) for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) 
+                        if (now_obj[0][i][j]) if (now_obj[1][0] / sz + i >= 10) {
+                            now_obj[1][0] -= sz; break;
+                        }
 
                     var list = [[0], [1, 2], [3, 4, 5, 6], [7, 8, 9, 10], [11, 12], [13, 14], [15, 16, 17, 18]];
                     var m = Math.floor(Math.random() * 7);
@@ -292,7 +310,8 @@
                     nxt_type[nxt_s][1] = Math.floor(Math.random() * 4);
 
                     var game = document.querySelector(".game");
-                    now_obj_draw = []; var cnt = 0;
+                    now_obj_draw = []; var cnt = 0, cnt2 = 0;
+                    for (var x = 0; x < 4; ++x) if (review_draw[x]) review_draw[x].remove();
                     for (var i = 0; i < 4; ++i) {
                         for (var j = 0; j < 4; ++j) if (now_obj[0][i][j]) 
                         {
@@ -310,6 +329,14 @@
                             now_obj_draw[cnt++] = [block, shadow];
                             game.appendChild(block);
                             game.appendChild(shadow);
+
+                            var review_block = document.createElement("div");
+                            review_block.className = "block";
+                            review_block.style.backgroundImage = 'url("' + col[now_obj[3]] + ".png" + '")';
+                            review_block.style.boxShadow = "0 0vh 4.5vh rgba(" + shadow_color[now_obj[3]] + ", 1)";
+                            review_block.style.opacity = review_opacitay;
+                            game.appendChild(review_block);
+                            review_draw[cnt2++] = review_block;
                         }
                     }
 
@@ -317,6 +344,7 @@
                         nxt_draw[nxt_s][x][1].remove();
                         nxt_draw[nxt_s][x][0].remove();
                     } nxt_draw[nxt_s] = [];
+
                     for (var i = 0; i < nxt_num; ++i) if (i != nxt_s)
                         for (var j = 0; j < 4; ++j) for (var k = 0; k < 2; ++k) {
                             var y = parseFloat(nxt_draw[i][j][k].style.top.substring(0, nxt_draw[i][j][k].style.top.length - 2));
@@ -454,7 +482,7 @@
                     obj_moved[0] = now_obj[0];
                     obj_moved[1] = now_obj[1].slice();
                     obj_moved[2] = now_obj[2];
-                    obj_moved[1][1]+= 0.2 + score / 200;
+                    obj_moved[1][1] += (0.2 + score / 200) * speedup;
                     obj_moved[3] = now_obj[3];
 
                     var flag = false;
@@ -464,7 +492,7 @@
                         if (y > 19 * sz) { flag = true; break } //边界判定
                         else if (map[Math.floor(x / sz)][Math.ceil(y / sz)] == 1) { flag = true; break } //碰撞
                     }
-                    
+
                     if (flag == false) {
                         now_obj = obj_moved;
                         var cnt = 0;
@@ -477,6 +505,7 @@
                         }
                     }
                     if (flag == true) {
+                        if (speedup != 1) shakeY();
                         now_obj[1][1] = obj_moved[1][1] = Math.round(obj_moved[1][1] / sz) * sz;
                         now_obj[1][0] = obj_moved[1][0] = Math.round(obj_moved[1][0] / sz) * sz;
                         var cnt = 0;
@@ -617,9 +646,38 @@
                     particle.remove();
                 }, 2);
             }
+            var blink = 0;
+            function review_light() {
+                var min = 20;
+                if (make_new == 0) var obj = now_obj[0].slice();
+                else return;
+                if (review_opacitay < 0.3) review_opacitay += 0.005;
+                for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj[i][j] == 1) 
+                    for (var k = 0; k <= 20; ++k) if (map[Math.round((now_obj[1][0] + i * sz) / sz)][k] == 1 || k == 20)
+                        if (k - j < min) min = k - j;
+                var cnt = 0;
+                for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (obj[i][j] == 1) {
+                    review_draw[cnt].style.left = now_obj[1][0] + i * 4.5 + 'vh';
+                    review_draw[cnt].style.top = min * 4.5 + j * 4.5 - 4.5 + 'vh';
+                    review_draw[cnt].style.opacity = (review_opacitay * ((1 + Math.sin(blink / 100)) / 5 + 0.5));
+                    review_draw[cnt].style.filter =  "blur(" + (0.51 - review_opacitay) + "vh)";
+                    review_draw[cnt].style.boxShadow = "0 0vh 4.5vh rgba(" + shadow_color[now_obj[3]] + ", " + (1 - Math.sin(blink / 100)) +")";
+                    cnt++;
+                }
+            }
+            
+            function movingborder() {
+                if (make_new == -3) return;
+                var game = document.querySelector(".game");
+                game.style.backgroundPosition =  "0 " + (-blink / 50) + "%, 100%  " + (-blink / 50) + "%";
+                // game.style.boxShadow =  "0 0 30vh 5vh rgba(30, 78, 90, " + (0.5 + 0.05 * Math.sin(blink / 50)) + ")";
+                blink++;
+            }
+
             document.addEventListener("keydown", function movement(e) {
                 if (e.keyCode == 82) window.location.reload();
-                if (e.keyCode == 40 && make_new == false && dist == 0) { //下箭头
+                if (e.keyCode == 40) speedup = 3;
+                if (e.keyCode == 32 && make_new == false && dist == 0) { //下箭头
                     for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j] == 1) {
                         var x = now_obj[1][0] + i * sz;
                         var y = now_obj[1][1] + j * sz + sz;
@@ -710,15 +768,10 @@
                     }
                 }
             }); 
-            function review_light() {
-                var min = 20;
-                for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j] == 1) 
-                    for (var k = 0; k <= 20; ++k) if (map[Math.round((now_obj[1][0] + i * sz) / sz)][k] == 1 || k == 20)
-                        if (k - j < min) min = k - j;
-                for (var i = 0; i < 4; ++i) for (var j = 0; j < 4; ++j) if (now_obj[0][i][j] == 1) 
-                    draglight2(now_obj[1][0] + i * 4.5, min * 4.5 + j * 4.5 - 4.5, "rgba(255, 255, 255, 0.1)");
-            }
-            setInterval(review_light, 10);
+            document.addEventListener("keyup", function movement(e) {
+                if (e.keyCode == 40) speedup = 1;
+            });
+            setInterval(review_light, 1);
 
             var nowtop = 0;
             setInterval(function() {
@@ -731,6 +784,7 @@
             }, 5);
             setInterval(function() {
                 var game = document.querySelector(".game");
+                if (speedup != 1) nowtop += 0.005;
                 now_window_angle += (window_angle - now_window_angle) * 0.2;
                 // window_angle = (now_obj[1][0] - 5 * 4.5) * 0.0001;
                 window_angle *= 0.98;
@@ -740,8 +794,10 @@
             }, 1);
             setInterval(spawn, 1);
             setInterval(drop, 10);
+            setInterval(movingborder, 10);
 
             function shakeY() {
+                if (speedup != 1) nowtop -= 0.65;
                 nowtop += 0.9;
                 // var cnt = 0, mxn = 10;
                 // window_angle = (now_obj[1][0] + 9 - 22.5) / 200;
